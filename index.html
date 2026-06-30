@@ -303,9 +303,17 @@ footer .stamp{display:inline-block;border:1px solid var(--red);color:var(--red);
     </div>
   </div>
 
-  <div class="screen" id="home">
+  <div class="screen" id="unitSel">
     <div class="topbar">
       <button class="back-btn" onclick="goSubjects()">← 과목 선택</button>
+      <span class="counter" id="unitSubjLabel"></span>
+    </div>
+    <div class="mode-grid" id="unitGrid"></div>
+  </div>
+
+  <div class="screen" id="home">
+    <div class="topbar">
+      <button class="back-btn" onclick="goUnits()">← 단원 선택</button>
       <span class="counter" id="subjLabel"></span>
     </div>
     <div class="mode-grid">
@@ -366,7 +374,8 @@ const TIME_LIMIT=8;       // 타임어택 문항당 제한초
 const MATCH_CHUNK=9;      // 카드 맞추기 한 라운드당 쌍 수
 
 let mode='', dir='w2m', queue=[], idx=0, score=0, answered=false, wrongs=[];
-let SUBJECT='classic';
+let SUBJECT='classic', FULL_VOCAB=[], UNIT_IDX=0;
+const UNIT_SIZE = 15;
 const SUBJECT_META = {
   classic:{label:'고전문학', eyebrow:'고전문학', title:'고전어휘 인출 연습'},
   science:{label:'독서·과학기술', eyebrow:'독서 과학·기술', title:'과학기술 어휘 인출 연습'},
@@ -375,16 +384,44 @@ const SUBJECT_META = {
 };
 function selectSubject(key){
   SUBJECT = key;
-  VOCAB = DATA[key];
+  FULL_VOCAB = DATA[key];
   const meta = SUBJECT_META[key];
   $('eyebrow').textContent = meta.eyebrow;
   $('mainTitle').textContent = meta.title;
-  $('subjLabel').textContent = meta.label + ' · ' + VOCAB.length + '개';
+  $('unitSubjLabel').textContent = meta.label + ' · 전체 ' + FULL_VOCAB.length + '개';
+  renderUnitGrid();
+  showScreen('unitSel');
+  setProgress(0,0,'학습 어휘');
+}
+function renderUnitGrid(){
+  const total = FULL_VOCAB.length;
+  const unitCount = Math.ceil(total/UNIT_SIZE);
+  const accents=['var(--red)','var(--blue)','var(--jade)','var(--gold)'];
+  let html='';
+  for(let i=0;i<unitCount;i++){
+    const start=i*UNIT_SIZE+1;
+    const end=Math.min(total,(i+1)*UNIT_SIZE);
+    html += `<button class="mode-card" style="--accent:${accents[i%4]}" onclick="selectUnit(${i})">
+      <div class="ico">${i+1}</div><h3>${i+1}단원</h3><p>${start}~${end}번 (${end-start+1}개)</p>
+    </button>`;
+  }
+  $('unitGrid').innerHTML = html;
+}
+function selectUnit(i){
+  UNIT_IDX = i;
+  VOCAB = FULL_VOCAB.slice(i*UNIT_SIZE, i*UNIT_SIZE+UNIT_SIZE);
+  const meta = SUBJECT_META[SUBJECT];
+  $('subjLabel').textContent = meta.label + ' · ' + (i+1) + '단원 (' + VOCAB.length + '개)';
   showScreen('home');
   setProgress(0,0,'학습 어휘');
 }
 function goSubjects(){
   showScreen('subjectSel');
+  setProgress(0,0,'학습 어휘');
+}
+function goUnits(){
+  renderUnitGrid();
+  showScreen('unitSel');
   setProgress(0,0,'학습 어휘');
 }
 const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
