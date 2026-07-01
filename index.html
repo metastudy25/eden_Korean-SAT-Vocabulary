@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>이든 고전어휘 | Eden Classic Vocab</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
@@ -21,7 +21,7 @@ body{font-family:var(--font);color:var(--meok);min-height:100vh;line-height:1.6;
   background-attachment:fixed;}
 body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.3;
   background-image:repeating-linear-gradient(90deg,transparent,transparent 3px,rgba(120,100,70,.025) 3px,rgba(120,100,70,.025) 4px);}
-.wrap{position:relative;z-index:1;max-width:680px;margin:0 auto;padding:20px 16px 70px;}
+.wrap{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:20px 20px 80px;}
 
 #gate{position:fixed;inset:0;z-index:60;background:linear-gradient(160deg,#211d18,#2f2920);
   display:flex;align-items:center;justify-content:center;padding:24px;}
@@ -58,8 +58,28 @@ header.hero .tag{font-size:13px;color:var(--meok-soft);margin-top:3px}
 .progress-bar{flex:1;height:6px;background:var(--hanji-2);border-radius:3px;overflow:hidden}
 .progress-fill{height:100%;width:0;background:linear-gradient(90deg,var(--gold),var(--red));transition:width .4s}
 
-.mode-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:11px}
+.mode-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+@media(min-width:700px){.mode-grid{grid-template-columns:repeat(4,1fr)}}
 @media(max-width:460px){.mode-grid{grid-template-columns:1fr}}
+/* 반응형 공통 */
+@media(min-width:700px){
+  .card{padding:34px 32px}
+  .word-big{font-size:40px}
+  .meaning-big{font-size:28px}
+  .sentence{font-size:19px}
+  .opt{font-size:17px;padding:16px 18px}
+  .swipe-zone{height:380px}
+  .flip-face{padding:36px 30px}
+  .swipe-card .word-big{font-size:44px}
+  .swipe-card .meaning-big{font-size:30px}
+}
+@media(max-width:480px){
+  .word-big{font-size:26px}
+  .meaning-big{font-size:19px}
+  .sentence{font-size:15px;line-height:1.8}
+  .opt{font-size:14px;padding:12px 13px}
+  .topbar{flex-wrap:wrap;gap:6px}
+}
 .mode-card{background:var(--paper-2);border:1px solid var(--line);border-radius:10px;padding:18px 16px;cursor:pointer;
   text-align:left;transition:transform .15s,box-shadow .15s,border-color .15s;position:relative;overflow:hidden}
 .mode-card::after{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--accent,var(--gold))}
@@ -182,14 +202,14 @@ header.hero .tag{font-size:13px;color:var(--meok-soft);margin-top:3px}
 /* ---- 카드 맞추기: 세련된 다크 네이비 카드 ---- */
 .match-board{background:linear-gradient(165deg,#1a2433,#0f1620);border-radius:16px;padding:20px;
   box-shadow:0 14px 36px rgba(0,0,0,.35)}
+@media(min-width:700px){.match-board{padding:28px}.match-tile{min-height:120px;font-size:18px}}
 .match-round-note{font-size:12px;color:#9fb3c8;text-align:center;margin-bottom:14px;font-weight:600}
-.match-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:0}
-@media(max-width:480px){.match-grid{grid-template-columns:repeat(2,1fr)}}
+.match-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:0}
 .match-tile{
   background:linear-gradient(160deg,#1f3550,#162538);border:1.5px solid #2c4a63;
   border-radius:11px;padding:20px 10px;font-size:15px;font-weight:700;color:#eef3f8;
-  cursor:pointer;text-align:center;transition:.18s;min-height:84px;display:flex;align-items:center;
-  justify-content:center;line-height:1.4;box-shadow:0 4px 14px rgba(0,0,0,.3);
+  cursor:pointer;text-align:center;transition:.18s;min-height:100px;display:flex;align-items:center;
+  justify-content:center;line-height:1.4;box-shadow:0 4px 14px rgba(0,0,0,.3);font-size:16px;
 }
 .match-tile:hover:not(.done){transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,0,0,.4);border-color:#3d6286}
 .match-tile.sel{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold),0 8px 22px rgba(176,137,48,.3);
@@ -201,8 +221,9 @@ header.hero .tag{font-size:13px;color:var(--meok-soft);margin-top:3px}
 .result-card{text-align:center;padding:38px 24px}
 
 /* ---- 블래스트 게임 ---- */
-.blast-board{position:relative;height:380px;border-radius:16px;overflow:hidden;
+.blast-board{position:relative;height:calc(100svh - 160px);min-height:420px;max-height:700px;border-radius:16px;overflow:hidden;
   background:radial-gradient(ellipse at 50% 0%,#1a2c45,#070b14 70%);box-shadow:0 14px 36px rgba(0,0,0,.4)}
+@media(max-width:480px){.blast-board{height:calc(100svh - 140px);min-height:360px}}
 .blast-stars{position:absolute;inset:0;background-image:
   radial-gradient(1.5px 1.5px at 20% 30%,#fff,transparent),
   radial-gradient(1.5px 1.5px at 70% 20%,#fff,transparent),
@@ -211,19 +232,22 @@ header.hero .tag{font-size:13px;color:var(--meok-soft);margin-top:3px}
   radial-gradient(1px 1px at 10% 80%,#fff,transparent),
   radial-gradient(1.5px 1.5px at 60% 90%,#fff,transparent);
   opacity:.5}
-.blast-hud{position:absolute;top:0;left:0;right:0;z-index:6;display:flex;align-items:center;justify-content:space-between;
-  padding:12px 16px;font-size:13px;color:#dce6f2;font-weight:700}
+.blast-hud{position:absolute;top:0;left:0;right:0;z-index:7;display:flex;align-items:center;justify-content:space-between;
+  padding:14px 18px;font-size:14px;color:#dce6f2;font-weight:700;background:linear-gradient(to bottom,rgba(7,11,20,.85),transparent)}
 .blast-hud .score{color:var(--gold);font-size:16px}
 .blast-hud .time{color:#ff7a6e}
-.blast-target{position:absolute;top:44px;left:50%;transform:translateX(-50%);z-index:6;
-  background:#0e1726;border:2px solid var(--gold);color:#fff;font-weight:800;font-size:18px;
-  padding:8px 20px;border-radius:10px;box-shadow:0 0 18px rgba(176,137,48,.4)}
+.blast-target{position:absolute;top:52px;left:50%;transform:translateX(-50%);z-index:6;
+  background:#0e1726;border:2px solid var(--gold);color:#fff;font-weight:800;font-size:20px;
+  padding:10px 24px;border-radius:10px;box-shadow:0 0 18px rgba(176,137,48,.4);white-space:nowrap}
+@media(min-width:700px){.blast-target{font-size:24px;padding:12px 30px}}
 .blast-bubble{
   position:absolute;border-radius:50%;display:flex;align-items:center;justify-content:center;
   background:radial-gradient(circle at 35% 30%,#3a5a8a,#16243a 75%);border:1.5px solid #4a6fa0;
-  color:#eaf1fa;font-weight:700;font-size:14px;cursor:pointer;text-align:center;padding:6px;
+  color:#eaf1fa;font-weight:700;font-size:13px;cursor:pointer;text-align:center;padding:8px;
   box-shadow:0 0 14px rgba(60,100,170,.35);transition:transform .12s,box-shadow .12s;
+  line-height:1.25;word-break:keep-all;
 }
+@media(min-width:700px){.blast-bubble{font-size:15px}}
 .blast-bubble:hover{transform:scale(1.06)}
 .blast-bubble.pop{animation:pop .35s forwards}
 @keyframes pop{to{transform:scale(1.6);opacity:0}}
@@ -371,7 +395,7 @@ const DATA = {"classic":[{"word":"책력(冊曆)","meaning":"달력","context":"
 let VOCAB = [];   // selectSubject()에서 채워짐
 
 const TIME_LIMIT=8;       // 타임어택 문항당 제한초
-const MATCH_CHUNK=9;      // 카드 맞추기 한 라운드당 쌍 수
+const MATCH_CHUNK=4;      // 카드 맞추기 한 라운드당 쌍 수(2열×4행=8타일)
 
 let mode='', dir='w2m', queue=[], idx=0, score=0, answered=false, wrongs=[];
 let SUBJECT='classic', FULL_VOCAB=[], UNIT_IDX=0;
@@ -552,7 +576,15 @@ function checkGate(){
 $('gateInput').addEventListener('keydown',e=>{if(e.key==='Enter')checkGate()});
 $('gateName').addEventListener('keydown',e=>{if(e.key==='Enter')$('gateInput').focus()});
 
-function setDir(d){dir=d;document.querySelectorAll('#dirToggle button').forEach(b=>b.classList.toggle('on',b.dataset.dir===d));}
+function setDir(d){
+  dir=d;
+  document.querySelectorAll('#dirToggle button').forEach(b=>b.classList.toggle('on',b.dataset.dir===d));
+  // 블래스트 진행 중이면 즉시 다음 배치에 반영 (현재 배치 새로고침)
+  if(mode==='blast' && blast.target){
+    const board=$('blastBoard');
+    if(board){ spawnBatch(); }
+  }
+}
 
 function setProgress(cur,total,label){
   $('progLabel').textContent=label;$('progNum').textContent=`${cur} / ${total}`;
@@ -653,7 +685,7 @@ function bindSwipe(){
   };
   const onUp=()=>{
     if(!dragging)return;dragging=false;card.style.transition='transform .35s cubic-bezier(.34,1.2,.4,1)';
-    if(!moved){card.style.transform='';card.classList.toggle('flipped');return;}
+    if(!moved){card.style.transform='';card.classList.toggle('flipped');playFlipSound();return;}
     if(dy<-45&&Math.abs(dx)<60){flyOut('up');return;}
     if(dx<-55){flyOut('left');return;}
     if(dx>55){flyOut('right');return;}
@@ -825,7 +857,7 @@ function renderLeitner(){
       <button class="bL" onclick="leitnerMark(false)">✗ 모름</button>
       <button class="bR" onclick="leitnerMark(true)">✓ 알아!</button>
     </div>`;
-  $('ltCard').addEventListener('click',function(){this.classList.toggle('flipped');});
+  $('ltCard').addEventListener('click',function(){this.classList.toggle('flipped');playFlipSound();});
 }
 function leitnerMark(known){
   flashJudgeOnly(known);
@@ -912,18 +944,19 @@ function timeUp(){
    ⑦ 카드 맞추기 — 큰 카드, 전체 어휘를 라운드로 분할
    ============================================================ */
 let matchSel=null, matchDone=0, matchRounds=[], matchRoundIdx=0, matchTotalDone=0;
+let matchRotation=1; // 회독 카운터 (전체 순환 1회 = 1회독)
 function startMatch(){
   const pool=shuffle(VOCAB);
   matchRounds=[];
   for(let i=0;i<pool.length;i+=MATCH_CHUNK)matchRounds.push(pool.slice(i,i+MATCH_CHUNK));
-  matchRoundIdx=0;matchTotalDone=0;
+  matchRoundIdx=0;matchTotalDone=0;matchRotation=1;
   renderMatchRound();
 }
 function renderMatchRound(){
   if(matchRoundIdx>=matchRounds.length)return matchAllDone();
   queue=matchRounds[matchRoundIdx];matchSel=null;matchDone=0;
   setProgress(matchTotalDone,VOCAB.length,'카드 맞추기');
-  $('counter').innerHTML=`라운드 <b>${matchRoundIdx+1}</b> / ${matchRounds.length}`;
+  $('counter').innerHTML=`<b>${matchRotation}회독</b> · ${matchRoundIdx+1}/${matchRounds.length}라운드`;
   const words=shuffle(queue.map((q,i)=>({t:q.word,k:i,type:'w'})));
   const means=shuffle(queue.map((q,i)=>({t:q.meaning,k:i,type:'m'})));
   const tiles=[];for(let i=0;i<queue.length;i++){tiles.push(words[i]);tiles.push(means[i]);}
@@ -962,11 +995,25 @@ function flashJudgeOnly(right){
   setTimeout(()=>{badge.classList.remove('show');border.className='flash-border';},right?450:600);
 }
 function matchAllDone(){
+  // ★ 학습기록 전송
+  saveStudyRecord({scoreVal: VOCAB.length, totalVal: VOCAB.length, wrongWords:[], extraNote:`${matchRotation}회독완료`});
+  matchRotation++;
+  // 회독 완료 알림 후 새 회독 자동 시작
+  $('feedback').className='feedback right';
+  $('feedback').textContent=`${matchRotation-1}회독 완료! 잠시 후 ${matchRotation}회독을 시작합니다.`;
+  setProgress(0,VOCAB.length,'카드 맞추기');
+  setTimeout(()=>{
+    $('feedback').textContent='';
+    const pool=shuffle(VOCAB);
+    matchRounds=[];
+    for(let i=0;i<pool.length;i+=MATCH_CHUNK)matchRounds.push(pool.slice(i,i+MATCH_CHUNK));
+    matchRoundIdx=0;matchTotalDone=0;
+    renderMatchRound();
+  },1800);
+}
+function _matchResultScreen(){
   setProgress(VOCAB.length,VOCAB.length,'카드 맞추기');
   $('counter').innerHTML='';$('feedback').textContent='';
-
-  // ★ 학습기록 전송
-  saveStudyRecord({scoreVal: VOCAB.length, totalVal: VOCAB.length, wrongWords:[]});
   $('gameBody').innerHTML=`
     <div class="card result-card">
       <div class="result-score">${VOCAB.length}<span style="font-size:24px;color:var(--meok-soft)"> / ${VOCAB.length}</span></div>
@@ -1028,7 +1075,7 @@ function spawnBatch(){
     el.textContent=v;
     el.onclick=()=>blastClick(el,v===correctVal);
     board.appendChild(el);
-    return {el,x:Math.random()*(blast.W-size),y:90+Math.random()*(blast.H-size-100),
+    return {el,x:Math.random()*(blast.W-size),y:130+Math.random()*(blast.H-size-150),
       vx:(Math.random()-.5)*1.0,vy:(Math.random()-.5)*1.0,size};
   });
 }
@@ -1036,7 +1083,7 @@ function blastLoop(){
   blast.bubbles.forEach(b=>{
     b.x+=b.vx;b.y+=b.vy;
     if(b.x<0||b.x>blast.W-b.size)b.vx*=-1;
-    if(b.y<70||b.y>blast.H-b.size)b.vy*=-1;
+    if(b.y<125||b.y>blast.H-b.size-5)b.vy*=-1;
     b.el.style.transform=`translate(${b.x}px,${b.y}px)`;
   });
   blast.raf=requestAnimationFrame(blastLoop);
@@ -1079,6 +1126,7 @@ function feedback(right){
   badge.className='judge-badge show '+(right?'ok':'no');
   const border=$('flashBorder');border.className='flash-border '+(right?'ok':'no');
   setTimeout(()=>{badge.classList.remove('show');border.className='flash-border';},right?550:900);
+  if(right) playCorrectSound(); else playWrongSound();
 }
 function next(){idx++;renderQ();}
 
@@ -1111,6 +1159,54 @@ function renderResult(){
       <button class="action-btn" onclick="startMode('${mode}')">다시 도전</button>
       <button class="action-btn ghost" onclick="goHome()">모드 선택으로</button>
     </div>`;
+}
+
+/* ============================================================
+   뒤집기 소리 — Web Audio API (라이브러리 없이 순수 생성)
+   ============================================================ */
+let _audioCtx = null;
+function getAudioCtx(){
+  if(!_audioCtx) _audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  return _audioCtx;
+}
+function playFlipSound(){
+  try{
+    const ctx = getAudioCtx();
+    const buf = ctx.createBuffer(1, ctx.sampleRate * 0.08, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for(let i=0;i<data.length;i++){
+      const t = i/ctx.sampleRate;
+      data[i] = Math.sin(2*Math.PI*800*t) * Math.exp(-30*t) * 0.35;
+    }
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    src.connect(ctx.destination);
+    src.start();
+  }catch(e){}
+}
+function playCorrectSound(){
+  try{
+    const ctx = getAudioCtx();
+    [523,659,784].forEach((freq,i)=>{
+      const osc=ctx.createOscillator(), gain=ctx.createGain();
+      osc.frequency.value=freq; osc.type='sine';
+      gain.gain.setValueAtTime(0.2,ctx.currentTime+i*0.1);
+      gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+i*0.1+0.18);
+      osc.connect(gain);gain.connect(ctx.destination);
+      osc.start(ctx.currentTime+i*0.1);osc.stop(ctx.currentTime+i*0.1+0.18);
+    });
+  }catch(e){}
+}
+function playWrongSound(){
+  try{
+    const ctx = getAudioCtx();
+    const osc=ctx.createOscillator(), gain=ctx.createGain();
+    osc.frequency.value=220; osc.type='sawtooth';
+    gain.gain.setValueAtTime(0.15,ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.25);
+    osc.connect(gain);gain.connect(ctx.destination);
+    osc.start();osc.stop(ctx.currentTime+0.25);
+  }catch(e){}
 }
 </script>
 </body>
