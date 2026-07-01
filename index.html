@@ -241,13 +241,25 @@ header.hero .tag{font-size:13px;color:var(--meok-soft);margin-top:3px}
   padding:10px 24px;border-radius:10px;box-shadow:0 0 18px rgba(176,137,48,.4);white-space:nowrap}
 @media(min-width:700px){.blast-target{font-size:24px;padding:12px 30px}}
 .blast-bubble{
-  position:absolute;border-radius:50%;display:flex;align-items:center;justify-content:center;
-  background:radial-gradient(circle at 35% 30%,#3a5a8a,#16243a 75%);border:1.5px solid #4a6fa0;
-  color:#eaf1fa;font-weight:700;font-size:13px;cursor:pointer;text-align:center;padding:8px;
-  box-shadow:0 0 14px rgba(60,100,170,.35);transition:transform .12s,box-shadow .12s;
-  line-height:1.25;word-break:keep-all;
+  position:absolute;border-radius:14px;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 30% 20%,#2e4e80,#0e1d36 80%);border:1.5px solid #4a6fa0;
+  color:#eaf1fa;font-weight:700;font-size:14px;cursor:pointer;text-align:center;
+  padding:10px 12px;box-shadow:0 4px 16px rgba(20,60,140,.5);
+  transition:transform .12s,box-shadow .12s,border-color .12s;
+  line-height:1.35;word-break:keep-all;word-wrap:break-word;overflow:hidden;
+  width:120px;min-height:64px;box-sizing:border-box;
+  /* 2줄 제한 */
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
 }
-@media(min-width:700px){.blast-bubble{font-size:15px}}
+/* flex와 line-clamp 충돌 방지 */
+.blast-bubble{display:flex!important;-webkit-line-clamp:unset;-webkit-box-orient:unset}
+.blast-bubble .bbl-inner{
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+  width:100%;text-align:center;font-size:inherit;line-height:1.35;
+}
+@media(min-width:700px){.blast-bubble{font-size:15px;width:140px;min-height:72px;padding:12px 14px}}
+@media(max-width:480px){.blast-bubble{font-size:13px;width:108px;min-height:58px}}
+.blast-bubble:hover{transform:scale(1.04);border-color:#7ab3ff;box-shadow:0 6px 22px rgba(40,100,200,.6)}
 .blast-bubble:hover{transform:scale(1.06)}
 .blast-bubble.pop{animation:pop .35s forwards}
 @keyframes pop{to{transform:scale(1.6);opacity:0}}
@@ -1134,7 +1146,7 @@ function nextWord(){
 }
 function spawnBatch(){
   blast.target=nextWord();
-  const askWord = dir==='w2m' ? false : true; // w2m: 뜻 보여주고 어휘 격파 / m2w: 어휘 보여주고 뜻 격파
+  const askWord = dir==='w2m' ? false : true;
   $('bTarget').textContent = askWord ? blast.target.word : blast.target.meaning;
   const key = askWord ? 'meaning' : 'word';
   const correctVal = blast.target[key];
@@ -1142,22 +1154,45 @@ function spawnBatch(){
   const vals=shuffle([correctVal,...distractVals]);
   const board=$('blastBoard');if(!board)return;
   document.querySelectorAll('.blast-bubble').forEach(b=>b.remove());
+
+  // 카드 고정 크기 (CSS와 일치)
+  const W=blast.W, H=blast.H;
+  const isMobile = W < 480;
+  const BW = isMobile ? 108 : W >= 700 ? 140 : 120;   // 카드 너비
+  const BH = isMobile ? 58  : W >= 700 ? 72  : 64;    // 카드 높이(최소)
+  const TOP_SAFE = 130;   // 제시어 + HUD 영역 아래
+  const PAD = 8;          // 벽 여백
+
   blast.bubbles=vals.map((v,i)=>{
-    const size=64+Math.random()*26;
     const el=document.createElement('div');
-    el.className='blast-bubble';el.style.width=size+'px';el.style.height=size+'px';
-    el.textContent=v;
+    el.className='blast-bubble';
+    // 텍스트를 inner span으로 감싸 2줄 클램프
+    el.innerHTML=`<span class="bbl-inner">${v}</span>`;
     el.onclick=()=>blastClick(el,v===correctVal);
     board.appendChild(el);
-    return {el,x:Math.random()*(blast.W-size),y:130+Math.random()*(blast.H-size-150),
-      vx:(Math.random()-.5)*1.0,vy:(Math.random()-.5)*1.0,size};
+    // 실제 렌더 높이 측정 (텍스트 2줄이면 더 높을 수 있음)
+    const realH = Math.max(el.offsetHeight||BH, BH);
+    // 초기 위치: 겹치지 않게 분산
+    const cols=3, rows=2;
+    const col=i%cols, row=Math.floor(i/cols);
+    const zoneW=(W-PAD*2)/cols, zoneH=(H-TOP_SAFE-PAD)/rows;
+    const x=PAD + col*zoneW + Math.random()*(zoneW-BW-PAD*2)+PAD;
+    const y=TOP_SAFE + row*zoneH + Math.random()*(zoneH-realH-PAD*2)+PAD;
+    el.style.left='0'; el.style.top='0';
+    el.style.transform=`translate(${x}px,${y}px)`;
+    return {el,x,y,vx:(Math.random()-.5)*0.9,vy:(Math.random()-.5)*0.9,bw:BW,bh:realH};
   });
 }
 function blastLoop(){
+  const PAD=8, TOP_SAFE=130;
   blast.bubbles.forEach(b=>{
     b.x+=b.vx;b.y+=b.vy;
-    if(b.x<0||b.x>blast.W-b.size)b.vx*=-1;
-    if(b.y<125||b.y>blast.H-b.size-5)b.vy*=-1;
+    // 좌우 경계: 카드 너비 고려
+    if(b.x<PAD){b.x=PAD;b.vx=Math.abs(b.vx);}
+    if(b.x>blast.W-b.bw-PAD){b.x=blast.W-b.bw-PAD;b.vx=-Math.abs(b.vx);}
+    // 상하 경계: 제시어 영역 아래부터, 하단 PAD 위까지
+    if(b.y<TOP_SAFE){b.y=TOP_SAFE;b.vy=Math.abs(b.vy);}
+    if(b.y>blast.H-b.bh-PAD){b.y=blast.H-b.bh-PAD;b.vy=-Math.abs(b.vy);}
     b.el.style.transform=`translate(${b.x}px,${b.y}px)`;
   });
   blast.raf=requestAnimationFrame(blastLoop);
