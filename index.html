@@ -421,6 +421,45 @@ header.hero .tag{font-size:13px;color:var(--meok-soft);margin-top:3px}
 
 
 /* ── 하단 탭바 ── */
+
+/* ── 관리자 모드 배지 ── */
+.admin-badge{
+  display:inline-block;background:var(--gold);color:#0a1932;
+  font-size:11px;font-weight:900;padding:2px 8px;border-radius:12px;
+  letter-spacing:.04em;vertical-align:middle;margin-left:6px;
+}
+/* ── 관리자 대시보드 ── */
+.admin-screen{display:none;animation:fade .3s ease}
+.admin-screen.active{display:block}
+.admin-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:8px}
+.admin-header h2{font-size:19px;font-weight:900;display:flex;align-items:center;gap:8px}
+.admin-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+@media(max-width:560px){.admin-summary{grid-template-columns:repeat(2,1fr)}}
+.admin-stat{background:var(--paper-2);border:1px solid var(--line);border-radius:10px;padding:12px 8px;text-align:center}
+.admin-stat b{display:block;font-size:22px;font-weight:900;color:var(--red)}
+.admin-stat span{font-size:11px;color:var(--meok-soft)}
+.admin-tools{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.admin-tool-btn{border:1.5px solid var(--line);background:#fff;border-radius:7px;
+  padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);color:var(--meok);transition:.15s}
+.admin-tool-btn:hover{background:var(--hanji-2)}
+.admin-tool-btn.danger{color:var(--red);border-color:var(--red)}
+.admin-tool-btn.danger:hover{background:#f6e7e6}
+.admin-filter{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.admin-filter select{border:1.5px solid var(--line);border-radius:7px;padding:6px 10px;
+  font-size:12px;font-family:var(--font);background:#fff;color:var(--meok);cursor:pointer}
+.admin-table-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--line);max-height:calc(100svh - 420px);overflow-y:auto}
+.admin-table{width:100%;border-collapse:collapse;font-size:12px;min-width:700px}
+.admin-table th{background:var(--blue);color:#fff;padding:10px 12px;text-align:left;
+  font-weight:700;white-space:nowrap;position:sticky;top:0;z-index:2}
+.admin-table td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+.admin-table tr:last-child td{border-bottom:none}
+.admin-table tr:nth-child(even) td{background:#fafaf6}
+.admin-table tr:hover td{background:#f0f5ff}
+.admin-table .pct-high{color:var(--jade);font-weight:800}
+.admin-table .pct-mid{color:var(--gold);font-weight:700}
+.admin-table .pct-low{color:var(--red);font-weight:700}
+.admin-table .wrongs-cell{color:var(--red);font-size:11px;max-width:180px;word-break:break-all}
+.admin-no-rec{text-align:center;padding:50px 20px;color:var(--meok-soft);font-size:14px}
 .bottom-tab{position:fixed;bottom:0;left:0;right:0;z-index:20;
   display:flex;background:#fff;border-top:1px solid var(--line);
   box-shadow:0 -4px 16px rgba(0,0,0,.08)}
@@ -602,6 +641,36 @@ footer .stamp{display:inline-block;border:1px solid var(--red);color:var(--red);
     <div id="recList" class="rec-list"></div>
   </div>
 
+  <!-- 관리자 대시보드 -->
+  <div class="admin-screen" id="adminScreen">
+    <div class="admin-header">
+      <h2>🛡 관리자 대시보드 <span class="admin-badge">ADMIN</span></h2>
+      <button class="admin-tool-btn" onclick="adminLogout()" style="border-color:var(--red);color:var(--red)">로그아웃</button>
+    </div>
+    <div id="adminSummary" class="admin-summary"></div>
+    <div class="admin-tools">
+      <button class="admin-tool-btn" onclick="adminRender()">🔄 새로고침</button>
+      <button class="admin-tool-btn" onclick="adminExportCSV()">📥 CSV 내보내기</button>
+      <button class="admin-tool-btn danger" onclick="adminClearAll()">🗑 전체 기록 삭제</button>
+    </div>
+    <div class="admin-filter">
+      <select id="adminFiltStudent" onchange="adminRender()"><option value="">전체 학생</option></select>
+      <select id="adminFiltSubject" onchange="adminRender()"><option value="">전체 과목</option></select>
+      <select id="adminFiltMode" onchange="adminRender()"><option value="">전체 모드</option></select>
+    </div>
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>완료시각</th><th>이름</th><th>과목</th><th>단원</th>
+            <th>모드</th><th>정답률</th><th>소요시간</th><th>오답 어휘</th>
+          </tr>
+        </thead>
+        <tbody id="adminTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
   <!-- 하단 탭바 -->
   <nav class="bottom-tab" id="bottomTab">
     <button class="on" id="tabStudy" onclick="switchTab('study')">
@@ -609,6 +678,9 @@ footer .stamp{display:inline-block;border:1px solid var(--red);color:var(--red);
     </button>
     <button id="tabRecord" onclick="switchTab('record')">
       <span class="ti">📊</span>학습기록
+    </button>
+    <button id="tabAdmin" onclick="switchTab('admin')" style="display:none">
+      <span class="ti">🛡</span>관리자
     </button>
   </nav>
 
@@ -815,7 +887,10 @@ async function loadStudentsFromSheet(){
 }
 loadStudentsFromSheet();
 
+// ★ 관리자 비밀번호 — 여기서 변경하세요
+const ADMIN_PW = 'eden2025!';  // ← 원하는 비밀번호로 변경
 let currentUser='';
+let isAdmin=false;
 function checkGate(){
   if(!studentsLoaded){
     $('gateErr').textContent='명단을 불러오는 중입니다. 잠시 후 다시 시도해 주세요.';
@@ -828,9 +903,19 @@ function checkGate(){
   }
   const n=$('gateName').value.trim();
   const v=$('gateInput').value.trim();
+  // 관리자 로그인 체크
+  if(v===ADMIN_PW){
+    currentUser='관리자'; isAdmin=true;
+    $('gate').style.display='none'; $('app').style.display='block';
+    $('userTag').innerHTML='관리자 <span class="admin-badge">ADMIN</span>';
+    // 관리자 탭 표시
+    const adminTab=$('tabAdmin'); if(adminTab) adminTab.style.display='';
+    switchTab('admin');
+    return;
+  }
   const found=STUDENTS.find(s=>s.name===n && s.pw===v);
   if(found){
-    currentUser=found.name;
+    currentUser=found.name; isAdmin=false;
     $('gate').style.display='none';$('app').style.display='block';
     $('userTag').textContent=currentUser+'님';
   }else{
@@ -1786,23 +1871,38 @@ function getLocalRecords(){
   try{ return JSON.parse(localStorage.getItem(LS_KEY)||'[]'); }catch(e){ return []; }
 }
 function saveLocalRecord(rec){
+  if(!rec.name) return;  // 이름 없으면 저장 안 함
   const list = getLocalRecords();
   list.unshift(rec);          // 최신이 위로
   if(list.length > 500) list.pop();   // 최대 500건 유지
   try{ localStorage.setItem(LS_KEY, JSON.stringify(list)); }catch(e){}
 }
 function clearRecords(){
-  if(!confirm('이 기기의 학습기록을 모두 삭제하시겠습니까?')) return;
-  localStorage.removeItem(LS_KEY);
+  const msg = isAdmin
+    ? '전체 학생의 기록을 삭제하시겠습니까?'
+    : `${currentUser}님의 학습기록을 삭제하시겠습니까?`;
+  if(!confirm(msg)) return;
+  if(isAdmin){
+    localStorage.removeItem(LS_KEY);
+  } else {
+    const rest = getLocalRecords().filter(r=>r.name!==currentUser);
+    try{ localStorage.setItem(LS_KEY, JSON.stringify(rest)); }catch(e){}
+  }
   renderRecords();
 }
 
 /* 탭 전환 */
 function switchTab(tab){
+  // 탭 버튼 on 상태
+  ['tabStudy','tabRecord','tabAdmin'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.classList.toggle('on', id==='tab'+tab.charAt(0).toUpperCase()+tab.slice(1));
+  });
   const isStudy = tab==='study';
-  document.getElementById('tabStudy').classList.toggle('on', isStudy);
-  document.getElementById('tabRecord').classList.toggle('on', !isStudy);
-  // 학습 관련 화면
+  const isRecord = tab==='record';
+  const isAdminTab = tab==='admin';
+
+  // 학습 화면들
   ['subjectSel','unitSel','home','game'].forEach(id=>{
     const el=document.getElementById(id);
     if(el) el.style.display = isStudy ? '' : 'none';
@@ -1810,16 +1910,141 @@ function switchTab(tab){
   // footer
   const ft = document.querySelector('footer');
   if(ft) ft.style.display = isStudy ? '' : 'none';
-  // 기록 화면
+  // 학습기록 화면
   const rec = document.getElementById('recScreen');
-  if(rec){ rec.classList.toggle('active', !isStudy); }
-  if(!isStudy) renderRecords();
+  if(rec) rec.classList.toggle('active', isRecord);
+  // 관리자 화면
+  const adm = document.getElementById('adminScreen');
+  if(adm) adm.classList.toggle('active', isAdminTab);
+
+  if(isRecord) renderRecords();
+  if(isAdminTab) { adminRender(); }
 }
 
+
+/* ============================================================
+   관리자 대시보드 — 전체 학생 학습 기록 조회·관리
+   ※ 기록은 이 기기(브라우저)의 localStorage에 저장됩니다.
+      모든 학생이 같은 기기를 사용하거나, Apps Script URL을
+      설정하면 구글시트에서도 통합 조회할 수 있습니다.
+   ============================================================ */
+function adminLogout(){
+  if(!confirm('관리자 모드에서 로그아웃하시겠습니까?')) return;
+  currentUser=''; isAdmin=false;
+  $('gate').style.display='flex'; $('app').style.display='none';
+  $('gateName').value=''; $('gateInput').value=''; $('gateErr').textContent='';
+  const adminTab=$('tabAdmin'); if(adminTab) adminTab.style.display='none';
+}
+
+function getAllRecords(){
+  try{ return JSON.parse(localStorage.getItem(LS_KEY)||'[]'); }catch(e){ return []; }
+}
+
+function adminRender(){
+  const all = getAllRecords();
+  const $body = document.getElementById('adminTableBody');
+  if(!$body) return;
+
+  // 필터 옵션 업데이트
+  const students = [...new Set(all.map(r=>r.name).filter(Boolean))].sort();
+  const subjects = [...new Set(all.map(r=>r.subject).filter(Boolean))].sort();
+  const modes    = [...new Set(all.map(r=>r.mode).filter(Boolean))].sort();
+
+  function updateSelect(id, vals){
+    const sel=document.getElementById(id); if(!sel) return;
+    const cur=sel.value;
+    sel.innerHTML='<option value="">'+sel.options[0].text+'</option>';
+    vals.forEach(v=>{ const o=document.createElement('option');o.value=o.textContent=v;sel.appendChild(o); });
+    sel.value=cur;
+  }
+  updateSelect('adminFiltStudent', students);
+  updateSelect('adminFiltSubject', subjects);
+  updateSelect('adminFiltMode',    modes);
+
+  // 필터 적용
+  const fStu=(document.getElementById('adminFiltStudent')||{}).value||'';
+  const fSub=(document.getElementById('adminFiltSubject')||{}).value||'';
+  const fMod=(document.getElementById('adminFiltMode')||{}).value||'';
+  const filtered = all.filter(r=>
+    (!fStu || r.name===fStu) &&
+    (!fSub || r.subject===fSub) &&
+    (!fMod || r.mode===fMod)
+  );
+
+  // 요약 통계
+  const totalSec = all.reduce((s,r)=>s+(r.elapsed||0),0);
+  const avgPct   = all.length ? Math.round(all.reduce((s,r)=>s+(r.total>0?r.score/r.total*100:0),0)/all.length) : 0;
+  const $sum=document.getElementById('adminSummary');
+  if($sum) $sum.innerHTML=`
+    <div class="admin-stat"><b>${students.length}</b><span>학생 수</span></div>
+    <div class="admin-stat"><b>${all.length}</b><span>총 세션</span></div>
+    <div class="admin-stat"><b>${Math.floor(totalSec/60)}</b><span>누적 학습(분)</span></div>
+    <div class="admin-stat"><b>${avgPct}%</b><span>전체 평균 정답률</span></div>
+  `;
+
+  // 테이블 렌더
+  if(filtered.length===0){
+    $body.innerHTML=`<tr><td colspan="8" class="admin-no-rec">기록이 없습니다.</td></tr>`;
+    return;
+  }
+  $body.innerHTML = filtered.slice(0,300).map(r=>{
+    const pct = r.total>0 ? Math.round(r.score/r.total*100) : null;
+    const pctClass = pct===null?'' : pct>=80?'pct-high':pct>=60?'pct-mid':'pct-low';
+    const pctText  = pct===null?'-':`${pct}% (${r.score}/${r.total})`;
+    const elap = r.elapsed ? `${Math.floor(r.elapsed/60)}분 ${r.elapsed%60}초` : '-';
+    const wrongs = r.wrongs&&r.wrongs.length ? r.wrongs.slice(0,5).join(', ')+(r.wrongs.length>5?` 외 ${r.wrongs.length-5}개`:'') : '-';
+    return `<tr>
+      <td style="white-space:nowrap;font-size:11px">${r.time||'-'}</td>
+      <td style="font-weight:800">${r.name||'-'}</td>
+      <td style="white-space:nowrap">${r.subject||'-'}</td>
+      <td>${r.unit||'-'}</td>
+      <td style="white-space:nowrap">${r.mode||'-'}</td>
+      <td class="${pctClass}">${pctText}</td>
+      <td style="white-space:nowrap">${elap}</td>
+      <td class="wrongs-cell">${wrongs}</td>
+    </tr>`;
+  }).join('');
+}
+
+function adminExportCSV(){
+  const all = getAllRecords();
+  if(!all.length){ alert('내보낼 기록이 없습니다.'); return; }
+  const fStu=(document.getElementById('adminFiltStudent')||{}).value||'';
+  const fSub=(document.getElementById('adminFiltSubject')||{}).value||'';
+  const fMod=(document.getElementById('adminFiltMode')||{}).value||'';
+  const rows = all.filter(r=>
+    (!fStu||r.name===fStu)&&(!fSub||r.subject===fSub)&&(!fMod||r.mode===fMod)
+  );
+  const header=['완료시각','이름','과목','단원','모드','정답수','전체수','정답률(%)','소요시간(초)','오답어휘'];
+  const lines=[header.join(',')];
+  rows.forEach(r=>{
+    const pct=r.total>0?Math.round(r.score/r.total*100):0;
+    const wrongs=r.wrongs?r.wrongs.join('|'):'';
+    lines.push([
+      `"${r.time||''}"`,r.name||'',r.subject||'',r.unit||'',
+      `"${r.mode||''}"`,r.score||0,r.total||0,pct,r.elapsed||0,`"${wrongs}"`
+    ].join(','));
+  });
+  const blob=new Blob(['﻿'+lines.join('\n')],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`이든학습기록_${new Date().toLocaleDateString('ko-KR').replace(/\./g,'').replace(/ /g,'')}.csv`;
+  a.click();
+}
+
+function adminClearAll(){
+  if(!confirm('⚠ 모든 학생의 학습 기록을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) return;
+  localStorage.removeItem(LS_KEY);
+  adminRender();
+  alert('삭제 완료');
+}
+
+/* 학생 기록 화면: 관리자면 전체, 학생이면 본인 것만 */
 /* 기록 렌더링 */
 let recFilterSubject = 'all';
 function renderRecords(){
-  const all = getLocalRecords().filter(r => !currentUser || r.name === currentUser);
+  // 관리자면 전체, 학생이면 본인 것만
+  const all = isAdmin ? getLocalRecords() : getLocalRecords().filter(r=>r.name===currentUser);
   const $sum = document.getElementById('recSummary');
   const $tabs = document.getElementById('recTabs');
   const $list = document.getElementById('recList');
