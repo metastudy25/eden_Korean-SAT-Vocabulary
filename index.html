@@ -513,14 +513,43 @@ footer .stamp{display:inline-block;border:1px solid var(--red);color:var(--red);
 
 <div id="gate">
   <div class="gate-card">
-    <div class="brand"><b>EDEN X</b> · 고전어휘</div>
-    <div class="gate-seal">古</div>
-    <h1>이든 고전어휘</h1>
-    <div class="sub">수능 고전문학 핵심어 150選</div>
-    <input id="gateName" type="text" placeholder="이름" maxlength="20" autocomplete="off" style="margin-bottom:10px">
-    <input id="gateInput" type="password" placeholder="비밀번호" maxlength="20" autocomplete="off">
-    <button class="gate-btn" onclick="checkGate()">로그인</button>
+    <div class="brand"><b>EDEN X</b> · 어휘인출</div>
+    <div class="gate-seal">語</div>
+    <h1>이든 語彙引出</h1>
+    <div class="sub">수능 어휘 인출 학습 시스템</div>
+
+    <!-- 학생 로그인 -->
+    <div id="studentLoginBox">
+      <input id="gateName" type="text" placeholder="이름" maxlength="20" autocomplete="off" style="margin-bottom:10px">
+      <input id="gateInput" type="password" placeholder="비밀번호 (숫자 6자리)" maxlength="20" autocomplete="off">
+      <button class="gate-btn" onclick="checkGate()">학생 로그인</button>
+    </div>
+
     <div class="gate-err" id="gateErr"></div>
+
+    <!-- 관리자 로그인 토글 -->
+    <div style="margin-top:18px;text-align:center">
+      <button onclick="toggleAdminLogin()" id="adminToggleBtn"
+        style="background:none;border:none;color:#8a7a6a;font-size:12px;font-weight:700;
+        cursor:pointer;text-decoration:underline;font-family:var(--font)">
+        🛡 관리자 로그인
+      </button>
+    </div>
+
+    <!-- 관리자 전용 입력 (기본 숨김) -->
+    <div id="adminLoginBox" style="display:none;margin-top:14px;padding-top:14px;
+      border-top:1px dashed var(--line)">
+      <div style="font-size:12px;font-weight:700;color:var(--red);margin-bottom:8px;text-align:center">
+        🛡 관리자 전용
+      </div>
+      <input id="adminPwInput" type="password" placeholder="관리자 비밀번호" maxlength="30"
+        autocomplete="off"
+        style="width:100%;padding:12px 14px;font-size:15px;text-align:center;
+        border:1.5px solid var(--red);border-radius:6px;background:#fff;
+        font-family:var(--font);letter-spacing:.1em">
+      <button class="gate-btn" onclick="checkAdminGate()"
+        style="margin-top:10px;background:var(--red)">관리자 입장</button>
+    </div>
   </div>
 </div>
 
@@ -891,40 +920,72 @@ loadStudentsFromSheet();
 const ADMIN_PW = 'eden2025!';  // ← 원하는 비밀번호로 변경
 let currentUser='';
 let isAdmin=false;
+function toggleAdminLogin(){
+  const box=$('adminLoginBox');
+  const btn=$('adminToggleBtn');
+  if(!box) return;
+  const show=box.style.display==='none';
+  box.style.display=show?'':'none';
+  btn.textContent=show?'✕ 닫기':'🛡 관리자 로그인';
+  if(show) setTimeout(()=>{ const i=$('adminPwInput');if(i)i.focus(); },100);
+}
+
+function checkAdminGate(){
+  const v=($('adminPwInput')||{}).value||'';
+  if(!v){ $('gateErr').textContent='관리자 비밀번호를 입력하세요.'; return; }
+  if(v===ADMIN_PW){
+    enterAdmin();
+  } else {
+    $('gateErr').textContent='관리자 비밀번호가 올바르지 않습니다.';
+    if($('adminPwInput')) $('adminPwInput').value='';
+  }
+}
+
+function enterAdmin(){
+  currentUser='관리자'; isAdmin=true;
+  $('gate').style.display='none'; $('app').style.display='block';
+  $('userTag').innerHTML='관리자 <span class="admin-badge">ADMIN</span>';
+  const adminTab=$('tabAdmin'); if(adminTab) adminTab.style.display='';
+  switchTab('admin');
+}
+
 function checkGate(){
+  const n=$('gateName').value.trim();
+  const v=$('gateInput').value.trim();
+
+  // 1순위: 관리자 비번 체크 (시트 로딩 상태와 무관하게 항상 먼저)
+  if(v===ADMIN_PW){ enterAdmin(); return; }
+
+  // 2순위: 시트 로딩 대기
   if(!studentsLoaded){
     $('gateErr').textContent='명단을 불러오는 중입니다. 잠시 후 다시 시도해 주세요.';
     setTimeout(checkGate, 700);
     return;
   }
   if(STUDENTS.length === 0){
-    $('gateErr').textContent='⚠ 학생 명단을 불러오지 못했습니다. Sheet1 공유 설정(링크 보기)을 확인해 주세요.';
+    $('gateErr').textContent='⚠ 학생 명단을 불러오지 못했습니다. 관리자에게 문의하세요.';
     return;
   }
-  const n=$('gateName').value.trim();
-  const v=$('gateInput').value.trim();
-  // 관리자 로그인 체크
-  if(v===ADMIN_PW){
-    currentUser='관리자'; isAdmin=true;
-    $('gate').style.display='none'; $('app').style.display='block';
-    $('userTag').innerHTML='관리자 <span class="admin-badge">ADMIN</span>';
-    // 관리자 탭 표시
-    const adminTab=$('tabAdmin'); if(adminTab) adminTab.style.display='';
-    switchTab('admin');
-    return;
-  }
+
+  // 3순위: 학생 로그인
+  if(!n){ $('gateErr').textContent='이름을 입력해 주세요.'; return; }
   const found=STUDENTS.find(s=>s.name===n && s.pw===v);
   if(found){
     currentUser=found.name; isAdmin=false;
-    $('gate').style.display='none';$('app').style.display='block';
+    $('gate').style.display='none'; $('app').style.display='block';
     $('userTag').textContent=currentUser+'님';
-  }else{
-    $('gateErr').textContent='이름 또는 비밀번호가 올바르지 않습니다. 이름 정확하게, 비번은 6자리 숫자로 입력하세요.';
+  } else {
+    $('gateErr').textContent='이름 또는 비밀번호가 올바르지 않습니다.';
     $('gateInput').value='';
   }
 }
 $('gateInput').addEventListener('keydown',e=>{if(e.key==='Enter')checkGate()});
 $('gateName').addEventListener('keydown',e=>{if(e.key==='Enter')$('gateInput').focus()});
+// adminPwInput은 동적 생성이므로 이벤트 위임
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter' && document.activeElement && document.activeElement.id==='adminPwInput')
+    checkAdminGate();
+});
 
 function setDir(d){
   dir=d;
