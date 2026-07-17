@@ -824,7 +824,7 @@ const esc=s=>s.replace(/'/g,"\\'");
 // ★ Sheet2에 연결된 Apps Script Web App URL을 아래에 붙여넣으세요
 // (구글시트 → 확장프로그램 → Apps Script → 배포 → 웹앱 URL 복사)
 // 시트: 1VkaajcU_EnvvLPbdTuzQHhtsHl0xdc8_G04HIzm_Ikg  /  Sheet2
-const APPS_SCRIPT_URL = 'YOUR_APPS_SCRIPT_WEB_APP_URL'; // ← 배포 후 이 값을 교체하세요
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwIsD5vcyAzwrl-kL-OasasdLJHCpwA04fGCNT7gCmV1BZsUah8TaEQuS6ncOwmysnc4Q/exec';
 
 let sessionStart = 0;       // 모드 시작 시각 (타임스탬프)
 let attemptCount = {};       // { "과목_단원_모드" : 횟수 } 시도 횟수 누적
@@ -868,35 +868,42 @@ function saveStudyRecord({scoreVal, totalVal, wrongWords=[], extraNote=''}){
    학생 명단 — 구글시트에서 실시간으로 불러옴 (이름 / 비번)
    시트에 행을 추가하면 새로고침 시 자동 반영됩니다.
    ============================================================ */
-const SHEET_ID = "1VkaajcU_EnvvLPbdTuzQHhtsHl0xdc8_G04HIzm_Ikg";
-const SHEET_NAME = "sheet1";   // 학생 이름·비번 탭 (소문자)
+const SHEET_ID = "1up30b3oeuGkqCpYyL3hJa5EwUTsbDsvb2iQZZTAc_hM";
+const SHEET_NAME = "시트1";    // 학생 이름·비번 탭
 const SHEET_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_NAME)}`;
 
-// 시트 연결이 안 될 경우를 대비한 예비 명단 (Sheet1 기준 2026-07-01)
-// ※ 평소에는 sheet1에서 실시간으로 불러오므로 이 값은 사용되지 않습니다.
+// 시트 연결이 안 될 경우를 대비한 예비 명단 (2026-07-17 기준 48명)
+// ※ 평소에는 시트1에서 실시간으로 불러오므로 이 값은 사용되지 않습니다.
 let STUDENTS = [
-  {name:"김유성",  pw:"505600"},{name:"김지우",    pw:"965802"},
-  {name:"박민균",  pw:"499500"},{name:"박주혁",    pw:"296500"},
-  {name:"박준혁",  pw:"283700"},{name:"박준혁(H)", pw:"141600"},
-  {name:"백승효",  pw:"607800"},{name:"손은지",    pw:"790500"},
-  {name:"손지예",  pw:"149700"},{name:"손태영",    pw:"910600"},
-  {name:"이서윤",  pw:"795400"},{name:"이성현",    pw:"780900"},
-  {name:"이수연",  pw:"095400"},{name:"이승찬",    pw:"005100"},
-  {name:"이윤재",  pw:"951100"},{name:"이재훈",    pw:"095400"},
-  {name:"이주형",  pw:"005101"},{name:"장은서",    pw:"391700"},
-  {name:"전혜리",  pw:"718900"},{name:"정하윤",    pw:"384000"},
-  {name:"조승훈",  pw:"144300"},{name:"조여은류나", pw:"988000"},
-  {name:"최수정",  pw:"517400"},{name:"황혜암",    pw:"281700"}
+  {name:"김도윤",pw:"122900"},{name:"김소이",pw:"611700"},{name:"김예원",pw:"961200"},
+  {name:"김용진",pw:"245100"},{name:"김유성",pw:"505600"},{name:"김재진",pw:"695700"},
+  {name:"김정윤",pw:"791300"},{name:"김진우",pw:"293400"},{name:"김채은",pw:"743000"},
+  {name:"나영서",pw:"799900"},{name:"노주원",pw:"625600"},{name:"민수연",pw:"371700"},
+  {name:"박민균",pw:"499500"},{name:"박서찬",pw:"477200"},{name:"박주혁",pw:"296500"},
+  {name:"박준혁",pw:"283700"},{name:"박준혁(H)",pw:"141600"},{name:"박지후",pw:"138100"},
+  {name:"백사라",pw:"134500"},{name:"서진영",pw:"712200"},{name:"손은지",pw:"790500"},
+  {name:"손지예",pw:"149700"},{name:"손태영",pw:"910600"},{name:"송채은",pw:"770500"},
+  {name:"신준호",pw:"381200"},{name:"예서영",pw:"124800"},{name:"이다경",pw:"025200"},
+  {name:"이민욱",pw:"039800"},{name:"이서윤",pw:"795400"},{name:"이성현",pw:"780900"},
+  {name:"이우진",pw:"061900"},{name:"이윤재",pw:"951100"},{name:"이재훈",pw:"095401"},
+  {name:"임도윤",pw:"157600"},{name:"장다연",pw:"267200"},{name:"장은서",pw:"391700"},
+  {name:"정가온",pw:"062200"},{name:"정시헌",pw:"363100"},{name:"정태하",pw:"557600"},
+  {name:"조승훈",pw:"144300"},{name:"조현호",pw:"464500"},{name:"최라온",pw:"022800"},
+  {name:"최시온",pw:"773900"},{name:"최시은",pw:"631400"},{name:"최윤",pw:"731800"},
+  {name:"한승우",pw:"677600"},{name:"황혜암",pw:"281700"}
 ];
 let studentsLoaded = false;
 
 function parseStudentCSV(text){
   const lines = text.replace(/\r/g,'').split('\n').filter(l=>l.trim().length>0);
   const out=[];
-  for(let i=1;i<lines.length;i++){ // 첫 줄은 헤더(이름,비번)
+  for(let i=1;i<lines.length;i++){
     const cols = lines[i].split(',').map(c=>c.replace(/^"|"$/g,'').trim());
-    const name = cols[0], pw = String(cols[1]||'').padStart(6,'0');
-    if(name && pw) out.push({name, pw});
+    const name = cols[0];
+    if(!name) continue;
+    // 비번: 구글시트가 앞자리 0을 숫자로 잘라낼 수 있으므로 항상 6자리 제로패딩
+    const pw = String(cols[1]||'').padStart(6,'0');
+    out.push({name, pw});
   }
   return out;
 }
@@ -969,7 +976,9 @@ function checkGate(){
 
   // 3순위: 학생 로그인
   if(!n){ $('gateErr').textContent='이름을 입력해 주세요.'; return; }
-  const found=STUDENTS.find(s=>s.name===n && s.pw===v);
+  // 입력 비번도 6자리 제로패딩 (앞자리 0 보정)
+  const vPadded = v.padStart(6,'0');
+  const found=STUDENTS.find(s=>s.name===n && (s.pw===v || s.pw===vPadded));
   if(found){
     currentUser=found.name; isAdmin=false;
     $('gate').style.display='none'; $('app').style.display='block';
